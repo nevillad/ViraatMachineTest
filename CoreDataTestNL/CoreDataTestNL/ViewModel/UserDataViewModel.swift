@@ -10,7 +10,7 @@ import UIKit
 
 class UserDataViewModel: NSObject {
     private let userInfo: UserInfo
-    
+
     init(userInfo: UserInfo) {
         self.userInfo = userInfo
         super.init()

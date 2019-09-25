@@ -9,40 +9,46 @@
 import UIKit
 import CoreData
 
+protocol UserDataListViewModelDelegate:NSObjectProtocol {
+    func reloadData()
+}
+
 class UserDataListViewModel: NSObject {
-    
-    private lazy var foodDataProvider: CoreDataProvider = {
+    weak private var delegate: UserDataListViewModelDelegate?
+    private lazy var dataProvider: CoreDataProvider = {
            let provider = CoreDataProvider()
            provider.fetchedResultsControllerDelegate = self
            return provider
        }()
     
-    var userDataViewModelList: [UserDataViewModel]?
-    
-    override init() {
+    init(delegate:UserDataListViewModelDelegate) {
+        self.delegate = delegate
         super.init()
-    }
+      }
     
     func numberOfUserData() -> Int {
-        return self.userDataViewModelList?.count ?? 0
+        return dataProvider.fetchedResultsController.fetchedObjects?.count ?? 0
     }
     
     func userInfoViewModelForIndex(index: NSInteger)  ->  UserDataViewModel?{
-        return self.userDataViewModelList?[index] ?? nil
+        guard let userInfo = dataProvider.fetchedResultsController.fetchedObjects?[index] else { return nil }
+        return UserDataViewModel(userInfo: userInfo)
     }
     
     func addDataRecord() {
-        var userInfo = UserInfo()
-        userInfo.userAddress = "Nevil's Address"
-        userInfo.userName = "Nevil"
-        let array = [userInfo]
-        
-    
+        self.dataProvider.addUserInfo { error in
+            //Show Error
+        }
     }
+    
+//    func addDataInBulk() {
+//    //    self.dataProvider.importDataFromJson()
+//    }
 }
 
 extension UserDataListViewModel: NSFetchedResultsControllerDelegate {
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        print("data updated")
+        self.delegate?.reloadData()
     }
 }
+

@@ -9,13 +9,17 @@
 import UIKit
 
 class UserDataViewController: UIViewController {
-    
+    private var viewModel: UserDataListViewModel?
     @IBOutlet weak var userDataTableView: UITableView!
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupView()
+        self.viewModel = UserDataListViewModel(delegate: self)
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+    }
     //MARK :: Class Methods
     func setupView(){
         //setup Navigation Bar
@@ -24,27 +28,31 @@ class UserDataViewController: UIViewController {
     }
 
     @objc func addTapped(){
-        print("Add")
+        self.viewModel?.addDataRecord()
     }
     
     @objc func refreshTapped(){
-          print("refresh")
-      }
-    
+        print("Refresh")
+    }
+}
+
+extension UserDataViewController: UserDataListViewModelDelegate {
+    func reloadData() {
+        self.userDataTableView.reloadData()
+    }
 }
 
 extension UserDataViewController: UITableViewDelegate, UITableViewDataSource {
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
-        
-    }
+
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
+        return viewModel?.numberOfUserData() ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "UserDataTableViewCell", for: indexPath) as! UserDataTableViewCell
-        
+        if let userDataViewModel = viewModel?.userInfoViewModelForIndex(index: indexPath.row) {
+            cell.setViewModel(viewModel: userDataViewModel)
+        }
         return cell
     }
 }

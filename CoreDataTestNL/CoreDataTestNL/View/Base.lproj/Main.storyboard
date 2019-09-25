@@ -52,6 +52,10 @@
                                                 <constraint firstItem="ghO-s1-caQ" firstAttribute="top" secondItem="XYx-Nl-fN2" secondAttribute="bottom" id="taa-dd-7fh"/>
                                             </constraints>
                                         </tableViewCellContentView>
+                                        <connections>
+                                            <outlet property="userAddress" destination="ghO-s1-caQ" id="pBk-eU-guD"/>
+                                            <outlet property="userName" destination="XYx-Nl-fN2" id="aXb-kA-Dsb"/>
+                                        </connections>
                                     </tableViewCell>
                                 </prototypes>
                                 <connections>

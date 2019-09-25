@@ -10,10 +10,7 @@ import Foundation
 import CoreData
 
 class CoreDataProvider: NSObject {
- 
-    
     // MARK: - Core Data stack
-
     lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "CoreDataTestNL")
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
@@ -27,7 +24,6 @@ class CoreDataProvider: NSObject {
         container.viewContext.shouldDeleteInaccessibleFaults = true
         return container
     }()
-
     
     // MARK: - Core Data Saving support
     func saveContext () {
@@ -42,39 +38,33 @@ class CoreDataProvider: NSObject {
         }
     }
     
-    
-    func addUserData(from userInfoList:Array<Any>) throws {
+    func addUserInfo(completionHandler: @escaping (Error?) -> Void) {
         let taskContext = persistentContainer.newBackgroundContext()
-              taskContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-              taskContext.undoManager = nil
-              let batchSize = 256
-              let count = userInfoList.count
-              var numBatches = count / batchSize
-              numBatches += count % batchSize > 0 ? 1 : 0
-              for batchNumber in 0 ..< numBatches {
-                  let batchStart = batchNumber * batchSize
-                  let batchEnd = batchStart + min(batchSize, count - batchNumber * batchSize)
-                  let range = batchStart..<batchEnd
-                  let foodsBatch = Array(userInfoList[range])
-                  if !importOneBatch(foodsBatch, taskContext: taskContext) {
-                      return
-                  }
-              }
-    }
-    
-    private func importOneBatch(_ userInfoList: [Any], taskContext: NSManagedObjectContext) -> Bool {
-        var success = false
+        taskContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        taskContext.undoManager = nil
         taskContext.performAndWait {
-            for dict in userInfoList {
-                guard let userData = NSEntityDescription.insertNewObject(forEntityName: "UserInfo", into: taskContext) as? UserInfo else {
-                    print("User Data")
-                    return
-                }
-                userData.userName = "Nevil"
-                userData.userAddress = "Address  sadaada "
+            guard let userData = NSEntityDescription.insertNewObject(forEntityName: "UserInfo", into: taskContext) as? UserInfo else {
+                print("User Data")
+                return
             }
- 
-            
+
+            let names = ["Nevil Lad", "Steve Jobs", "Vinayak Khedkar", "Mayank Agarval", "Keyur Patel", "Jishan Ansari", "Snatosh Shahi", "Elon Musk","Vikram Lander" , "Bill Gates", "Steve Jobs"]
+            let addresses = ["B1-803, DSK Madhuban, Sakinanka",
+                             "1 Apple Park Way in Cupertino, California, United States",
+                             "203, Ganesh Gally, Chinchpokli, Mumbai",
+                             "B3-504, Gundecha, Marolnaka, Mumbai",
+                             "B1-803, DSK Madhuban, Sakinanka",
+                             "1 Apple Park Way in Cupertino, California, United States",
+                             "203, Ganesh Gally, Chinchpokli, Mumbai",
+                             "B3-504, Gundecha, Marolnaka, Mumbai",
+                             "Moon",
+                             "B3-504, Gundecha, Marolnaka, Mumbai",
+                             "1 Apple Park Way in Cupertino, California, United States"
+                                ]
+            let number = Int.random(in: 0 ..< 10)
+            userData.userName = names[number]
+            userData.userAddress = addresses[number]
+            userData.time = Date()
             if taskContext.hasChanges {
                 do {
                     try taskContext.save()
@@ -84,19 +74,19 @@ class CoreDataProvider: NSObject {
                 }
                 taskContext.reset()
             }
-            success = true
+            completionHandler(nil)
         }
-        return success
+        completionHandler(nil)
     }
     
-    func fetchUserData() {
-        
-    }
-    
-    
+   
     weak var fetchedResultsControllerDelegate: NSFetchedResultsControllerDelegate?
        lazy var fetchedResultsController: NSFetchedResultsController<UserInfo> = {
            let fetchRequest = NSFetchRequest<UserInfo>(entityName: "UserInfo")
+            let sort = NSSortDescriptor(key: "time", ascending: false)
+            fetchRequest.sortDescriptors = [sort]
+            fetchRequest.fetchBatchSize = 20
+
            let controller = NSFetchedResultsController(fetchRequest: fetchRequest,
                                                        managedObjectContext: persistentContainer.viewContext,
                                                        sectionNameKeyPath: nil, cacheName: nil)
